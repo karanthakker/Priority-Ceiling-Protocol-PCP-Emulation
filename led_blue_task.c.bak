@@ -1,0 +1,57 @@
+
+#include "led_blue_task.h"
+#include "led_util.h"
+#include "project.h"
+#include "priorities.h"
+
+// The stack size for the LED toggle task.
+#define LEDBLUETASKSTACKSIZE        128         // Stack size in words
+
+// This task toggles the LED 
+static void
+vLedBlueTask(void *pvParameters)
+{
+    // Loop forever.
+    while(1)
+    {
+        if ( xSemaphoreTake(xSemaphoreBinLed, LED_BLINK_DELAY / portTICK_RATE_MS) == pdTRUE )
+        {
+            // We were able to obtain the semaphore and can now access the
+            // shared resource.
+
+            // Blink the LED.
+            vBlinkLed(LED_BLUE);            
+        
+//          // Delay for 1 second.
+//        vTaskDelay( LED_BLINK_DELAY / portTICK_RATE_MS);
+          
+            // We have finished accessing the shared resource.  Release the 
+            // semaphore.
+            xSemaphoreGive( xSemaphoreBinLed );
+        }
+        else
+        {
+            while(1)
+            {
+            }
+        }
+      
+//      // Delay for 1 second.
+//      vTaskDelay( LED_BLINK_DELAY / portTICK_RATE_MS);
+    }
+}
+
+// Initializes the LED tasks.
+unsigned portBASE_TYPE
+vLedBlueTaskInit( void )
+{
+    if(xTaskCreate(vLedBlueTask, (signed portCHAR *)"LED_BLUE", LEDBLUETASKSTACKSIZE, NULL,
+                   tskIDLE_PRIORITY + PRIORITY_LED_BLUE_TASK, NULL) != pdTRUE)
+    {
+        // Fail.
+        return(1);
+    }
+    
+    // Success.
+    return(0);
+}
